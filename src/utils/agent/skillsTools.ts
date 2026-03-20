@@ -23,10 +23,16 @@ function parseFrontmatter(content: string): { name: string; description: string 
 
   for (let i = 0; i < lines.length; ) {
     const colonIndex = lines[i].indexOf(":");
-    if (colonIndex === -1) { i++; continue; }
+    if (colonIndex === -1) {
+      i++;
+      continue;
+    }
 
     const key = lines[i].slice(0, colonIndex).trim();
-    if (!key) { i++; continue; }
+    if (!key) {
+      i++;
+      continue;
+    }
 
     let value = lines[i].slice(colonIndex + 1).trim();
     i++;
@@ -44,8 +50,7 @@ function parseFrontmatter(content: string): { name: string; description: string 
     result[key] = value;
   }
 
-  if (!result.name) throw new Error("Frontmatter missing required field: name");
-  if (!result.description) throw new Error("Frontmatter missing required field: description");
+  if (!result.name || !result.description) throw new Error("Frontmatter missing required field: name or description");
   return { name: result.name, description: result.description };
 }
 
@@ -57,13 +62,17 @@ function stripFrontmatter(content: string): string {
 
 async function listResources(dir: string, base = ""): Promise<string[]> {
   let entries;
-  try { entries = await fs.readdir(dir, { withFileTypes: true }); } catch { return []; }
+  try {
+    entries = await fs.readdir(dir, { withFileTypes: true });
+  } catch {
+    return [];
+  }
 
   const files: string[] = [];
   for (const entry of entries) {
     const rel = base ? `${base}/${entry.name}` : entry.name;
     if (entry.isDirectory()) {
-      files.push(...await listResources(path.join(dir, entry.name), rel));
+      files.push(...(await listResources(path.join(dir, entry.name), rel)));
     } else if (entry.name !== "SKILL.md") {
       files.push(rel);
     }
@@ -71,22 +80,39 @@ async function listResources(dir: string, base = ""): Promise<string[]> {
   return files;
 }
 
+// ==================== 读取单个技能 ====================
+
+async function readSkillFromDir(skillDir: string): Promise<SkillRecord | null> {
+  const location = path.join(skillDir, "SKILL.md");
+  let content: string;
+  try {
+    content = await fs.readFile(location, "utf-8");
+  } catch {
+    return null;
+  }
+  try {
+    const meta = parseFrontmatter(content);
+    console.log(`[Skill] ✅ 发现技能：${meta.name} — ${meta.description}`);
+    return { ...meta, location, baseDir: skillDir };
+  } catch (e) {
+    console.log(`[Skill] ⚠️ 解析失败 "${skillDir}"：${(e as Error).message}`);
+    return null;
+  }
+}
+
 // ==================== 构建技能目录 ====================
 
-function buildCatalog(skill: SkillRecord): string {
-  return [
-    "## Skills",
-    "以下技能提供了专业任务的专用指令。",
-    "当任务与某个技能的描述匹配时，调用 activate_skill 工具并传入技能名称来加载完整指令。",
-    "加载后遵循技能指令执行任务，需要时调用 read_skill_file 读取资源文件内容。",
-    "",
-    "<available_skills>",
-    `  <skill>`,
-    `    <name>${skill.name}</name>`,
-    `    <description>${skill.description}</description>`,
-    `  </skill>`,
-    "</available_skills>",
-  ].join("\n");
+function buildCatalog(skills: SkillRecord[]): string {
+  const entries = skills.map((s) => `  <skill>\n    <name>${s.name}</name>\n    <description>${s.description}</description>\n  </skill>`).join("\n");
+
+  return `## Skills
+以下技能提供了专业任务的专用指令。
+当任务与某个技能的描述匹配时，调用 activate_skill 工具并传入技能名称来加载完整指令。
+加载后遵循技能指令执行任务，需要时调用 read_skill_file 读取资源文件内容。
+
+<available_skills>
+${entries}
+</available_skills>`;
 }
 
 // ==================== 激活 + 执行工具 ====================
@@ -103,19 +129,13 @@ function createSkillTools(skills: SkillRecord[]) {
       }),
       execute: async ({ name }) => {
         const skill = skills.find((s) => s.name === name);
-        if (!skill) {
-          console.log(`[Skill] ❌ 激活失败：未找到技能 "${name}"`);
-          return { error: `Skill '${name}' not found` };
-        }
-
-        if (activated.has(name)) {
-          console.log(`[Skill] ℹ️ 技能 "${name}" 已在当前会话中激活，跳过重复注入`);
-          return { already_active: true, message: `技能 "${name}" 已激活，无需重复加载` };
-        }
+        if (!skill) return { error: `Skill '${name}' not found` };
+        if (activated.has(name)) return { already_active: true, message: `技能 "${name}" 已激活，无需重复加载` };
 
         let content: string;
-        try { content = await fs.readFile(skill.location, "utf-8"); } catch {
-          console.log(`[Skill] ❌ 激活失败：无法读取 ${skill.location}`);
+        try {
+          content = await fs.readFile(skill.location, "utf-8");
+        } catch {
           return { error: `Failed to read SKILL.md for '${name}'` };
         }
 
@@ -123,22 +143,17 @@ function createSkillTools(skills: SkillRecord[]) {
         const resources = await listResources(skill.baseDir);
         activated.add(name);
 
-        console.log(`[Skill] 📖 已激活技能：${skill.name}（${body.length} 字符，${resources.length} 个资源文件）`);
-
-        const resourcesXml = resources.length > 0
-          ? `\n<skill_resources>\n${resources.map((f) => `  <file>${f}</file>`).join("\n")}\n</skill_resources>`
-          : "";
+        const resourcesXml =
+          resources.length > 0 ? `\n<skill_resources>\n${resources.map((f) => `  <file>${f}</file>`).join("\n")}\n</skill_resources>` : "";
 
         return {
-          content: [
-            `<skill_content name="${skill.name}">`,
-            body,
-            "",
-            `Skill directory: ${skill.baseDir}`,
-            `相对路径基于此技能目录解析，使用 read_skill_file 工具读取资源文件。`,
-            resourcesXml,
-            `</skill_content>`,
-          ].join("\n"),
+          content: `<skill_content name="${skill.name}">
+${body}
+
+Skill directory: ${skill.baseDir}
+相对路径基于此技能目录解析，使用 read_skill_file 工具读取资源文件。
+${resourcesXml}
+</skill_content>`,
         };
       },
     }),
@@ -151,23 +166,14 @@ function createSkillTools(skills: SkillRecord[]) {
       }),
       execute: async ({ skillName, filePath: relPath }) => {
         const skill = skills.find((s) => s.name === skillName);
-        if (!skill) {
-          console.log(`[Skill] ❌ 读取失败：未找到技能 "${skillName}"`);
-          return { error: `Skill '${skillName}' not found` };
-        }
+        if (!skill) return { error: `Skill '${skillName}' not found` };
 
         const fullPath = path.resolve(path.join(skill.baseDir, relPath));
-        if (!isPathInside(fullPath, skill.baseDir)) {
-          console.log(`[Skill] 🚫 路径越界已拦截："${relPath}" 超出技能目录范围`);
-          return { error: "Access denied: path is outside skill directory" };
-        }
+        if (!isPathInside(fullPath, skill.baseDir)) return { error: "Access denied: path is outside skill directory" };
 
         try {
-          const fileContent = await fs.readFile(fullPath, "utf-8");
-          console.log(`[Skill] 📄 已读取文件：${skillName}/${relPath}（${fileContent.length} 字符）`);
-          return { content: fileContent };
+          return { content: await fs.readFile(fullPath, "utf-8") };
         } catch {
-          console.log(`[Skill] ❌ 读取失败：未找到文件 "${relPath}"`);
           return { error: `File not found: ${relPath}` };
         }
       },
@@ -180,26 +186,25 @@ function createSkillTools(skills: SkillRecord[]) {
 export async function useSkill(...segments: string[]) {
   if (segments.length === 0) return { prompt: "", tools: {} };
 
-  const baseDir = path.join(getPath("skills"), ...segments);
-  const location = path.join(baseDir, "SKILL.md");
+  const skills = new Map<string, SkillRecord>();
 
-  let content: string;
-  try { content = await fs.readFile(location, "utf-8"); } catch {
-    console.log(`[Skill] ⚠️ 未发现技能：${segments.join("/")}`);
-    return { prompt: "", tools: {} };
+  const primary = await readSkillFromDir(path.join(getPath("skills"), ...segments));
+  if (primary) skills.set(primary.name, primary);
+
+  const publicDir = path.join(getPath("skills"), "public");
+  try {
+    const entries = await fs.readdir(publicDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const skill = await readSkillFromDir(path.join(publicDir, entry.name));
+      if (skill && !skills.has(skill.name)) skills.set(skill.name, skill);
+    }
+  } catch {
+    /* public dir not found */
   }
 
-  let metadata: { name: string; description: string };
-  try { metadata = parseFrontmatter(content); } catch (e) {
-    console.log(`[Skill] ⚠️ 解析失败 "${segments.join("/")}"：${(e as Error).message}`);
-    return { prompt: "", tools: {} };
-  }
+  if (skills.size === 0) return { prompt: "", tools: {} };
 
-  const skill: SkillRecord = { ...metadata, location, baseDir };
-  console.log(`[Skill] ✅ 发现技能：${skill.name} — ${skill.description}`);
-
-  return {
-    prompt: buildCatalog(skill),
-    tools: createSkillTools([skill]),
-  };
+  const allSkills = [...skills.values()];
+  return { prompt: buildCatalog(allSkills), tools: createSkillTools(allSkills) };
 }
