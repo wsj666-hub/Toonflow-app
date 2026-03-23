@@ -21,7 +21,7 @@ export default router.post(
     const data = await query;
     const assetsData = await u
       .db("o_assets")
-      .leftJoin("o_scriptAssets", "o_assets.id", "o_scriptAssets.assetsId")
+      .leftJoin("o_scriptAssets", "o_assets.id", "o_scriptAssets.assetId")
       .whereIn(
         "o_scriptAssets.scriptId",
         data.map((i) => i.id),
