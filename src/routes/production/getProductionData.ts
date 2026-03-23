@@ -34,23 +34,26 @@ export default router.post(
           const parsedData = JSON.parse(item.data);
           const dataWithFilePath = await Promise.all(
             parsedData.map(async (d: { type: string; id: number }) => {
-              if (d.type === "assets") {
+              if (d.type === "assets" && d.id) {
                 const row = await u
                   .db("o_assets")
-                  .where("o_assets.id", item.id)
+                  .where("o_assets.id", d.id)
                   .leftJoin("o_image", "o_assets.imageId", "o_image.id")
-                  .select("o_image.filePath")
+                  .select("o_image.filePath as imageFilePath")
                   .first();
-                if (row?.filePath) {
-                  return await u.oss.getFileUrl(row.filePath);
+                if (row?.imageFilePath) {
+                  return await u.oss.getFileUrl(row.imageFilePath);
                 }
-              } else {
-                const row = await u.db("o_storyboard").where("id", item.id).select("filePath").first();
-                if (row?.filePath) {
-                  return await u.oss.getFileUrl(row.filePath);
-                }
+                return null;
               }
-              return d;
+              if (d.type === "storyboard" && d.id) {
+                const row = await u.db("o_storyboard").where("id", d.id).select("filePath").first();
+                if (row?.filePath) {
+                  return await u.oss.getFileUrl(row.filePath);
+                }
+                return null;
+              }
+              return null;
             }),
           );
           return {

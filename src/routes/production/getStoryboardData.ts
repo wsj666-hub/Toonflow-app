@@ -8,17 +8,17 @@ const router = express.Router();
 export default router.post(
   "/",
   validateFields({
-    projectId: z.number(),
+    scriptId: z.number(),
   }),
   async (req, res) => {
-    const { projectId } = req.body;
-    const storyboardData = await u.db("o_storyboard");
+    const { scriptId } = req.body;
+    const storyboardData = await u.db("o_storyboard").where({ scriptId });
     const data = await Promise.all(
       storyboardData.map(async (i) => {
         return {
           ...i,
-          title: i.name,
-          src: i.filePath ? await u.oss.getFileUrl(i.filePath!) : "",
+          title: i.title,
+          filePath: i.filePath ? await u.oss.getFileUrl(i.filePath!) : "",
         };
       }),
     );

@@ -153,7 +153,6 @@ export default router.post(
         return res.status(500).send("资产已被删除");
       }
     } catch (e) {
-      console.errork(e);
       await u.db("o_image").where("id", imageId).update({
         state: "生成失败",
       });
