@@ -1,10 +1,7 @@
-import { app, BrowserWindow, protocol,ipcMain  } from "electron";
+import { app, BrowserWindow, protocol } from "electron";
 import path from "path";
 import fs from "fs";
 import Module from "module";
-
-// 默认端口配置
-const defaultPort = 10588;
 
 /**
  * 将 extraResources 中的 data 目录复制到用户数据目录（跳过已存在的文件，保留用户修改）
@@ -163,7 +160,10 @@ app.whenReady().then(async () => {
       const handler = handlers[pathname];
       const responseData = handler ? handler() : { error: "未知接口" };
       return new Response(JSON.stringify(responseData), {
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Cache-Control": "no-store",
+        },
       });
     });
 

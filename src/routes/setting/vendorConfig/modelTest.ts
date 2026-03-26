@@ -70,7 +70,7 @@ export default router.post(
 
       if (type == "text") {
         const resTextData = await u.Ai.Text(`${id}:${modelName}`).invoke({
-          prompt: "请调用工具获取北京的天气，并回答我多少气温",
+          prompt: "请调用工具获取火星的天气，并回答我多少气温",
           tools: { getWeatherTool },
         });
 
