@@ -43,11 +43,19 @@ export default router.post(
     }
     const childAssets = await childQuery;
 
+    // 为每个子资产添加图片地址
+    const childAssetsWithSrc = await Promise.all(
+      childAssets.map(async (child) => ({
+        ...child,
+        src: child.filePath && (await u.oss.getFileUrl(child.filePath!)),
+      })),
+    );
+
     // 为每个父资产添加子资产
     const result = await Promise.all(
       parentAssets.map(async (parent) => ({
         ...parent,
-        sonAssets: childAssets.filter((child) => child.assetsId === parent.id),
+        sonAssets: childAssetsWithSrc.filter((child) => child.assetsId === parent.id),
         src: parent.filePath && (await u.oss.getFileUrl(parent.filePath!)),
       })),
     );

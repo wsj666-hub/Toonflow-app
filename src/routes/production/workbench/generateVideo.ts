@@ -103,7 +103,6 @@ export default router.post(
 3. 视频风格应与用户指定的模式数据相匹配，包括色彩、音乐、特效等元素。
 4. 视频中应包含用户提供的图片，并在视频中适当展示，以增强视频的视觉效果。
 5. 如果用户指定了音频，请确保视频中的音频与视频内容相匹配，符合用户的创意意图。`;
-        console.log("%c Line:110 🍑 prompt", "background:#b03734", prompt);
 
         const aiVideo = u.Ai.Video(model);
         await aiVideo.run(
