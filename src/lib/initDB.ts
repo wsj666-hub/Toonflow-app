@@ -130,7 +130,7 @@ export default async (knex: Knex, forceInit: boolean = false): Promise<void> => 
           },
           {
             key: "messagesPerSummary",
-            value: 3,
+            value: 10,
           },
           {
             key: "shortTermLimit",

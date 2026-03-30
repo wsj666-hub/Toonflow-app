@@ -49,7 +49,7 @@ export default (nsp: Namespace) => {
       const currentController = abortController;
       const memory = new Memory("scriptAgent", isolationKey);
 
-      const msg = resTool.newMessage("assistant", "统筹");
+      const msg = resTool.newMessage("assistant", "视频策划");
       const ctx: agent.AgentContext = {
         socket,
         isolationKey,
@@ -69,7 +69,7 @@ export default (nsp: Namespace) => {
       const persistCurrentMessage = async () => {
         if (!currentContent.trim()) return;
         await memory.add("assistant:decision", currentContent, {
-          name: "统筹",
+          name: "视频策划",
           createTime: new Date(currentMsg.datetime).getTime(),
         });
         currentContent = "";
@@ -101,14 +101,6 @@ export default (nsp: Namespace) => {
           abortController = null;
         }
       }
-    });
-
-    socket.on("setModelData", async (data: any) => {
-      resTool.data.imageModel = data;
-    });
-    socket.on("setKeyScript", async (data: any) => {
-      isolationKey = data.key;
-      resTool.data.scriptId = data.scriptId;
     });
 
     socket.on("stop", () => {
