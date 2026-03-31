@@ -205,7 +205,7 @@ export default router.post(
       try {
         const data = await u.db("o_prompt").where("type", "scriptAssetExtraction").first("data");
         const existingHint = existingAssetsList
-          ? `\n\n【已有资产列表】：${existingAssetsList}\n对于已有资产，如果在剧本中出现，只需在 existingAssetRefs 中给出资产名称和对应的 scriptIds 数组即可，无需重复生成 prompt/desc/type。对于新发现的资产（不在已有列表中），请在 newAssets 中给出完整信息。`
+          ? `\n\n【已有资产列表】：${existingAssetsList}\n对于已有资产，如果在剧本中出现，只需在 existingAssetRefs 中给出资产名称和对应的 scriptIds 数组即可，无需重复生成 desc/type。对于新发现的资产（不在已有列表中），请在 newAssets 中给出完整信息。`
           : "";
 
         const output = await intansce.invoke({

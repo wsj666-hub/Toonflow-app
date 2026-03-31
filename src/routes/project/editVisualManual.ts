@@ -12,6 +12,7 @@ export default router.post(
   "/",
   validateFields({
     name: z.string(),
+    title: z.string(),
     images: z.array(z.string()),
     data: z.array(
       z.object({
@@ -23,8 +24,9 @@ export default router.post(
   }),
   async (req, res) => {
     try {
-      const { name, images, data } = req.body as {
+      const { name, title, images, data } = req.body as {
         name: string;
+        title: string;
         images: string[];
         data: { label: string; value: string; data: string }[];
       };
@@ -72,7 +74,8 @@ export default router.post(
         if (!fs.existsSync(fileDir)) {
           fs.mkdirSync(fileDir, { recursive: true });
         }
-        fs.writeFileSync(filePath, item.data, "utf-8");
+        const content = item.value === "README" ? `# ${title}\n${item.data}` : item.data;
+        fs.writeFileSync(filePath, content, "utf-8");
       }
       const ossImagesDir = u.getPath(["oss", name]);
 
