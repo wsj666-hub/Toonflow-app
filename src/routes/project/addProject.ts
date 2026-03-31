@@ -17,11 +17,11 @@ export default router.post(
     videoRatio: z.string(),
     imageModel: z.string(),
     videoModel: z.string(),
-  imageQuality: z.string()
-
+    imageQuality: z.string(),
+    mode: z.string(),
   }),
   async (req, res) => {
-    const { projectType, name, intro, type, artStyle, videoRatio, imageModel, videoModel,imageQuality } = req.body;
+    const { projectType, name, intro, type, artStyle, videoRatio, imageModel, videoModel, imageQuality, mode } = req.body;
 
     await u.db("o_project").insert({
       projectType,
@@ -34,7 +34,8 @@ export default router.post(
       imageModel,
       videoModel,
       createTime: Date.now(),
-      imageQuality
+      imageQuality,
+      mode,
     });
 
     res.status(200).send(success({ message: "新增项目成功" }));
