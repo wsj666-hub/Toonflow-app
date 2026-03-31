@@ -15,7 +15,6 @@ export default router.post(
   async (req, res) => {
     try {
       const { name } = req.body as { name: string };
-      console.log("%c Line:18 🍓 name", "background:#2eafb0", name);
 
       // 安全校验：不允许包含路径分隔符、纯数字，防止越级删除或误删项目目录
       if (name.includes("/") || name.includes("\\") || name === "." || name === ".." || /^\d+$/.test(name)) {
