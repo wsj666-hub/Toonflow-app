@@ -127,6 +127,7 @@ export default router.post(
                   desc: child.describe ?? "",
                   src: child.filePath && (await u.oss.getFileUrl(child.filePath!)),
                   state: child.state ?? "未生成",
+                  errorReason: child?.errorReason ?? "",
                 })),
             ),
           })),
@@ -140,6 +141,7 @@ export default router.post(
             associateAssetsIds: assets2StoryboardMap[i.id!] ?? [],
             src: i.filePath,
             state: i.state,
+            reason: i?.reason ?? "",
           }))
           .sort((a, b) => (a.index ?? 0) - (b.index ?? 0));
         res.status(200).send(success(flowData));

@@ -14,7 +14,7 @@ export default router.post(
         track: z.string(),
         state: z.string(),
         src: z.string().nullable(),
-        videoPrompt: z.string(),
+        videoDesc: z.string(),
         shouldGenerateImage: z.number(),
         associateAssetsIds: z.array(z.number()),
       }),
@@ -33,7 +33,7 @@ export default router.post(
         scriptId,
         projectId,
         track:item.track,
-        videoPrompt:item.videoPrompt,
+        videoDesc:item.videoDesc,
         shouldGenerateImage:item.shouldGenerateImage,
         createTime: Date.now(),
       });

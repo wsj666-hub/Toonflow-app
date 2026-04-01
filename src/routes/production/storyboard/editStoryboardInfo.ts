@@ -11,11 +11,13 @@ export default router.post(
   validateFields({
     id: z.number(),
     prompt: z.string(),
+    videoDesc: z.string(),
   }),
   async (req, res) => {
     const { id, prompt } = req.body;
     await u.db("o_storyboard").where({ id }).update({
       prompt,
+      videoDesc,
     });
     res.status(200).send(success({ message: "更新提示词成功" }));
   },

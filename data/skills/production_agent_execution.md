@@ -664,7 +664,7 @@ Image [2]: @图2 — [外貌关键描述]
 ### 约束
 
 - 前置条件：分镜表已构建完成且用户已确认
-- 你必须使用XML格式写入工作区分镜面板：<storyboardItem videoPrompt='视频提示词' prompt='提示词内容' track='分组' duration='视频推荐时间' associateAssetsIds="[该分镜所需的资产ID列表]" shouldGenerateImage="是否需要生成分镜图片 true/false, 默认为true" ></storyboardItem>
+- 你必须使用XML格式写入工作区分镜面板：<storyboardItem videoDesc='视频描述' prompt='提示词内容' track='分组' duration='视频推荐时间' associateAssetsIds="[该分镜所需的资产ID列表]" shouldGenerateImage="是否需要生成分镜图片 true/false, 默认为true" />
 - 分组总时长约束：每个 `group` 的累计时长不得超过 15 秒
 - 行数一致性约束：分镜面板 `items` 数量必须与 `stoaryTable` 的分镜数据行数量完全一致（不包含表头与分隔行）
 - 时长一致性约束：分镜面板 `duration` 必须与 `stoaryTable` 对应行时长完全一致
