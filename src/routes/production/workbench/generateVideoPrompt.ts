@@ -17,10 +17,11 @@ export default router.post(
     const { trackId, projectId, prompt, model } = req.body;
     const [id, modelData] = model.split(":");
     const projectData = await u.db("o_project").select("*").where({ id: projectId }).first();
+    const videoPrompt = await u.db("o_prompt").where("type", "videoPromptGeneration").first();
     const artStyle = projectData?.artStyle || "无";
     const visualManual = u.getArtPrompt(artStyle, "art_storyboard_video");
     const { text } = await u.Ai.Text("universalAi").invoke({
-      system: visualManual,
+      system: `${videoPrompt?.data},${visualManual}`,
       messages: [
         {
           role: "user",
