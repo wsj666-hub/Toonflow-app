@@ -67,7 +67,7 @@ export default router.post(
         inputs: JSON.stringify(inputs),
         inputValues: JSON.stringify(inputValues),
         models: JSON.stringify(models),
-        enableEnglish: 0,
+        enable: 0,
       });
     res.status(200).send(success("更新成功"));
   },

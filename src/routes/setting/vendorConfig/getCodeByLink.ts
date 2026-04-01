@@ -7,13 +7,11 @@ const router = express.Router();
 export default router.post(
   "/",
   validateFields({
-    id: z.string(),
+    link: z.string(),
   }),
   async (req, res) => {
-    const { id, enable } = req.body;
-    await u.db("o_vendorConfig").where("id", id).update({
-      enable,
-    });
-    res.status(200).send(success("更新成功"));
+    const { link } = req.body;
+    const text = await fetch(link).then((res) => res.text());
+    res.status(200).send(success(text));
   },
 );

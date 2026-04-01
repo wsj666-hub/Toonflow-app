@@ -92,7 +92,7 @@ export default router.post(
       models: JSON.stringify(vendor.models ?? []),
       code: tsCode,
       createTime: Date.now(),
-      enableEnglish: 0,
+      enable: 1,
     });
     res.status(200).send(success(result.data));
   },
