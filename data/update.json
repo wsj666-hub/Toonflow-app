@@ -1,0 +1,27 @@
+{
+    "version": "1.0.8",
+    "time": 1775118545494,
+    "data": {
+        "toonflow": [
+            {
+                "type": "zip",
+                "url": "https://toonflow.oss-cn-beijing.aliyuncs.com/latest/latest.zip"
+            },
+            {
+                "type": "windows",
+                "url": "https://toonflow.oss-cn-beijing.aliyuncs.com/latest/latest.exe"
+            },
+            {
+                "type": "linux",
+                "url": "https://toonflow.oss-cn-beijing.aliyuncs.com/latest/latest.AppImage"
+            },
+            {
+                "type": "macos",
+                "url": "https://toonflow.oss-cn-beijing.aliyuncs.com/latest/latest.dmg"
+            }
+        ],
+        "github": [],
+        "atomgit": [],
+        "gitee": []
+    }
+}

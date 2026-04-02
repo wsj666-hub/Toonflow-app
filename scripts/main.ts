@@ -13,17 +13,14 @@ declare const __APP_VERSION__: string | undefined;
  * 将 extraResources 中的 data 目录复制到用户数据目录（跳过已存在的文件，保留用户修改）
  */
 
-function getVersionFromFile(filePath: string): string | null {
+function getVersionFromUpdateJson(filePath: string): string | null {
   try {
     if (fs.existsSync(filePath)) {
-      return fs.readFileSync(filePath, "utf8").trim();
+      const data = JSON.parse(fs.readFileSync(filePath, "utf8"));
+      return data.version ?? null;
     }
   } catch {}
   return null;
-}
-
-function writeVersionToFile(filePath: string, version: string): void {
-  fs.writeFileSync(filePath, version, { encoding: "utf8" });
 }
 
 function copyDirForce(src: string, dest: string): void {
@@ -37,14 +34,13 @@ function copyDirForce(src: string, dest: string): void {
 function initializeData(): void {
   const srcDir = path.join(process.resourcesPath, "data");
   const destDir = path.join(app.getPath("userData"), "data");
-  const versionFile = path.join(destDir, "version.txt");
+  const updateJsonFile = path.join(destDir, "update.json");
   const currentVersion = typeof __APP_VERSION__ !== "undefined" ? __APP_VERSION__ : "0.0.0";
-  const userVersion = getVersionFromFile(versionFile);
+  const userVersion = getVersionFromUpdateJson(updateJsonFile);
 
-  // 首次安装或无version.txt，直接全量拷贝
+  // 首次安装或无update.json，直接全量拷贝
   if (!fs.existsSync(destDir) || !userVersion) {
     copyDirRecursive(srcDir, destDir);
-    writeVersionToFile(versionFile, currentVersion);
     return;
   }
 
@@ -52,7 +48,6 @@ function initializeData(): void {
   if (userVersion !== currentVersion) {
     copyDirForce(path.join(srcDir, "serve"), path.join(destDir, "serve"));
     copyDirForce(path.join(srcDir, "web"), path.join(destDir, "web"));
-    writeVersionToFile(versionFile, currentVersion);
   }
 }
 
