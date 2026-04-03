@@ -51,10 +51,10 @@ export default router.post(
         { value: "art_prop_derivative", subDir: "art_prompt" },
         { value: "art_scene", subDir: "art_prompt" },
         { value: "art_scene_derivative", subDir: "art_prompt" },
-        { value: "art_storyboard", subDir: "art_prompt" },
+        { value: "director_storyboard", subDir: "driector_skills" },
         { value: "art_storyboard_video", subDir: "art_prompt" },
-        { value: "director_planning", subDir: "driector_skills" },
-        { value: "director_storyboard_table", subDir: "driector_skills" },
+        { value: "director_planning_style", subDir: "driector_skills" },
+        { value: "director_storyboard_table_style", subDir: "driector_skills" },
       ];
 
       // 根据 DATA_MAP 构建 value -> subDir 的映射

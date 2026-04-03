@@ -78,7 +78,7 @@ export default router.post(
     const artStyle = projectData?.artStyle || "无";
     const data = projectData?.directorManual || "无";
     const visualManual = u.getArtPrompt(artStyle, "art_skills", "art_storyboard_video");
-    const directorManual = u.getArtPrompt(data, "story_skills", "narrative_sweet_romance");
+    const directorManual = u.getArtPrompt(data, "story_skills", "director_planning_narrative");
     const content = `
           **模型名称**：${modelData},
           **资产信息**（角色、场景、道具):${assets.map((i) => `[id:${i.id},type:${i.type},name:${i.name}]`).join("，")},
