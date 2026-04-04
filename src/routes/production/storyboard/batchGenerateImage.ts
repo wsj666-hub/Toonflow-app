@@ -111,6 +111,7 @@ export default router.post(
             .db("o_storyboard")
             .where("id", item.id)
             .update({
+              filePath: "",
               reason: u.error(e).message,
               state: "生成失败",
             });
