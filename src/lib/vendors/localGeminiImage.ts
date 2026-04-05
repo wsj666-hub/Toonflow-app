@@ -180,6 +180,37 @@ function buildImageBody(imageConfig: ImageConfig, imageModel: ImageModel) {
   };
 }
 
+async function getAvailableModels(baseUrl: string, apiKey: string) {
+  const response = await fetch(baseUrl + "/models", {
+    headers: {
+      Authorization: "Bearer " + apiKey,
+    },
+  });
+  if (!response.ok) return [];
+  const data = await response.json();
+  return Array.isArray(data?.data) ? data.data.map((item) => item?.id).filter(Boolean) : [];
+}
+
+function formatServiceError(errorText: string, imageModel: ImageModel, availableModels: string[]) {
+  if (errorText.includes("auth_unavailable: no auth available")) {
+    return (
+      "本地 8317 服务已收到请求，但当前没有可用的上游鉴权可供模型调用。" +
+      "请在 management 页面为该模型绑定可用 auth，或改用当前 /models 已暴露的可用模型。"
+    );
+  }
+
+  if (availableModels.length && !availableModels.includes(imageModel.modelName)) {
+    return (
+      "当前本地服务未暴露模型 " +
+      imageModel.modelName +
+      "。/v1/models 返回的模型有: " +
+      availableModels.join(", ")
+    );
+  }
+
+  return errorText;
+}
+
 const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) => {
   if (!vendor.inputValues.apiKey) throw new Error("缺少API Key");
 
@@ -189,6 +220,13 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
 
   for (const baseUrl of resolveCandidateBaseUrls(vendor.inputValues.baseUrl)) {
     try {
+      const availableModels = await getAvailableModels(baseUrl, apiKey);
+      if (availableModels.length && !availableModels.includes(imageModel.modelName)) {
+        throw new Error(
+          "当前本地服务未暴露模型 " + imageModel.modelName + "。/v1/models 返回的模型有: " + availableModels.join(", "),
+        );
+      }
+
       const response = await fetch(baseUrl + "/chat/completions", {
         method: "POST",
         headers: {
@@ -200,7 +238,12 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
 
       if (!response.ok) {
         const errorText = await response.text();
-        throw new Error("请求失败，状态码: " + response.status + ", 错误信息: " + errorText);
+        throw new Error(
+          "请求失败，状态码: " +
+            response.status +
+            ", 错误信息: " +
+            formatServiceError(errorText, imageModel, availableModels),
+        );
       }
 
       const data = await response.json();
