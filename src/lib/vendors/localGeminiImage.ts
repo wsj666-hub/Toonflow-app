@@ -221,12 +221,6 @@ const imageRequest = async (imageConfig: ImageConfig, imageModel: ImageModel) =>
   for (const baseUrl of resolveCandidateBaseUrls(vendor.inputValues.baseUrl)) {
     try {
       const availableModels = await getAvailableModels(baseUrl, apiKey);
-      if (availableModels.length && !availableModels.includes(imageModel.modelName)) {
-        throw new Error(
-          "当前本地服务未暴露模型 " + imageModel.modelName + "。/v1/models 返回的模型有: " + availableModels.join(", "),
-        );
-      }
-
       const response = await fetch(baseUrl + "/chat/completions", {
         method: "POST",
         headers: {
