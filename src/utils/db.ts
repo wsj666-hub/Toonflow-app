@@ -4,6 +4,7 @@ import fs from "fs";
 import path from "path";
 import knex from "knex";
 import initDB from "@/lib/initDB";
+import ensureBuiltinVendors from "@/lib/vendors/ensureBuiltinVendors";
 // import fixDB from "@/lib/fixDB";
 import type { DB } from "@/types/database";
 import crypto from "crypto";
@@ -35,6 +36,7 @@ const db = knex({
 
 (async () => {
   await initDB(db);
+  await ensureBuiltinVendors(db);
   // await fixDB(db);
   if (process.env.NODE_ENV == "dev") initKnexType(db);
 })();
